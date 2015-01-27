@@ -78,7 +78,7 @@ namespace PhotoBulge.Controllers
         [Route("download")]
         public HttpResponseMessage Download(DownloadModel downloadModel)
         {
-            string imgPath = Path.Combine( , downloadModel.Folder);
+            string imgPath = Path.Combine(ConfigurationManager.AppSettings["ImagesFolder"], downloadModel.Folder);
             var images = downloadModel.Images.Split(new[] {','});
             
             using (var zipStream = new MemoryStream())
