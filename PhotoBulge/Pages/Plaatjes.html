@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
     <link href="../Content/bootstrap.css" rel="stylesheet" />
     <script src="../Scripts/jquery-2.1.3.js"></script>
-    
+
     <style>
         #folder-page {
             display: none;
@@ -14,136 +14,187 @@
         #images-page {
             display: none;
         }
+
+        #full-image-container {
+            display: none;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+            #full-image-container img {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 10%;
+            }
     </style>
 
 </head>
-    <body>
-        <div class="container" id="folder-page">
-            <div class="page-header">
-                <h2>Selecteer de folder die u wil bekijken</h2>
-            </div>
-            <div class="list-group" id="folder-container"></div>
+<body>
+    <div class="container" id="folder-page">
+        <div class="page-header">
+            <h2>Selecteer de folder die u wil bekijken</h2>
         </div>
-        <div class="container" id="images-page">
-            <div class="page-header">
-                <h2 id="description"></h2>
-            </div>
-
-            <div class="container media-body">
-                <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
-                <button type="button" class="btn btn-default" id="selectAll">
-                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Alles selecteren
-                </button>
-                <button type="button" class="btn btn-default" id="download">
-                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download als ZIP
-                </button>
-                <div class="row" id="images-container">
-
-                </div>
-            </div>
-
-            <div style="display: none;">
-                <form action="../download" method="post" id="downloadForm">
-                    <input type="text" name="Folder" id="folder" />
-                    <input type="text" name="Images" id="images" />
-                </form>
-            </div>
-
-        
+        <div class="list-group" id="folder-container"></div>
+    </div>
+    <div class="container" id="images-page">
+        <div class="page-header">
+            <h2 id="description"></h2>
         </div>
-    
-    
-        <div id="ajax_loader" style="position: fixed; left: 50%; top: 50%; margin-left:-110px; display: none;">
-            <img src="../content/images/ajax-loader.gif" />
+
+        <div class="container media-body">
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+            <button type="button" class="btn btn-default" id="selectAll">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Alles selecteren
+            </button>
+            <button type="button" class="btn btn-default" id="download">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download als ZIP
+            </button>
+            <button type="button" class="btn btn-default" id="back">
+                <span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span> Terug naar overzicht
+            </button>
+            <div class="row" id="images-container">
+
+            </div>
         </div>
-    
 
-        <script language="javascript">
-            var folder = undefined;
+        <div style="display: none;">
+            <form action="../download" method="post" id="downloadForm">
+                <input type="text" name="Folder" id="folder" />
+                <input type="text" name="Images" id="images" />
+            </form>
+        </div>
+    </div>
 
-            $(document).ready(function () {
 
-                $.getJSON("../folders", function (folderList) {
-                    var folderContainer = $("#folder-container");
-                    folderContainer.empty();
-                    $.each(folderList, function(i, folderEntry) {
-                        folderContainer.append("<a class=\"list-group-item\" href=\"#\">" + folderEntry.Description + "</a>");
+    <div id="full-image-container">
+        <img src="" />
+    </div>
+
+    <div id="ajax_loader" style="position: fixed; left: 50%; top: 50%; margin-left:-110px; display: none;">
+        <img src="../content/images/ajax-loader.gif" />
+    </div>
+
+
+    <script language="javascript">
+        var folder = undefined;
+        var currentFolder = undefined;
+
+        $(document).ready(function () {
+
+            $.getJSON("../folders", function (folderList) {
+                var folderContainer = $("#folder-container");
+                folderContainer.empty();
+                $.each(folderList, function (i, folderEntry) {
+                    var folderItem = folderContainer.append("<a class=\"list-group-item\" href=\"#\">" + folderEntry.Description + "</a>");
+                    folderItem.click(function () {
+                        folder = folderEntry.Name;
+                        $("#folder-page").hide();
+                        showFolderContent();
                     });
-
-                    $("#folder-page").show();
                 });
 
+                $("#folder-page").show();
+            });
 
 
-                $("#selectAll").click(function () {
-                    error();
-                    $(".selectImage").each(function () {
-                        this.checked = true;
-                    });
+            $("#full-image-container").click(function() {
+                $(this).hide();
+            });
+
+            $("#selectAll").click(function () {
+                error();
+                $(".selectImage").each(function () {
+                    this.checked = true;
                 });
+            });
 
-                $("#download").click(function () {
-                    error();
-                    var imagesList = Array();
-                    $(".selectImage").each(function () {
-                        if (this.checked) {
-                            imagesList.push(this.id);
-                        }
-                    });
-                    if (imagesList.length == 0) {
-                        error("Selecteer eerst een foto.");
-                        return;
+            $("#back").click(function() {
+                $("#images-page").hide();
+                $("#folder-page").show();
+            })
+
+            $("#download").click(function () {
+                error();
+                var imagesList = Array();
+                $(".selectImage").each(function () {
+                    if (this.checked) {
+                        imagesList.push(this.id);
                     }
-
-                    $("#folder").val(folder);
-                    $("#images").val(imagesList.join());
-                    $("#downloadForm").submit();
-
                 });
+                if (imagesList.length == 0) {
+                    error("Selecteer eerst een foto.");
+                    return;
+                }
 
+                $("#folder").val(folder);
+                $("#images").val(imagesList.join());
+                $("#downloadForm").submit();
+
+            });
+
+
+            function showFolderContent() {
+
+                if (currentFolder == folder) {
+                    $("#images-page").show();
+                    return;
+                }
 
                 $.getJSON("../list/" + folder, function (list) {
+                    
                     error();
                     $("#description").text(list.Description);
-
+                    
+                    $("#images-container").empty();
 
                     $.each(list.Images, function (i, image) {
-                        var container = $("#container");
+                        
                         var src = "../image/" + folder + "/" + image.Name + "/small";
                         var lnk = "../image/" + folder + "/" + image.Name + "/full";
-                        container.append(
+                        var div = $("#images-container").append(
                             "<div class='col-xs-6 col-md-3'><div class='input-group'>" +
                             "<input type='checkbox' class='selectImage' id='" + image.Name + "'>" +
-                            "<a href='" + lnk + "' class='thumbnail'><img src='" + src + "'" + "/></a>" +
+                            "<img src='" + src + "'" + "/>" +
                             "</div></div>");
+                        div.click(function () {
+                            $("#full-image-container img").attr("src", lnk);
+                            $("#full-image-container").show();
+                        });
 
                     });
+                    $("#images-page").show();
+                    currentFolder = folder;
                 });
+            };
 
-            });
+        });
 
 
 
-            function error(message) {
-                if (message) {
-                    $("#errorMessage").text(message);
-                    $("#errorMessage").show();
-                } else {
-                    $("#errorMessage").hide();
-                }
+        function error(message) {
+            if (message) {
+                $("#errorMessage").text(message);
+                $("#errorMessage").show();
+            } else {
+                $("#errorMessage").hide();
             }
+        }
 
 
-            $(document).ajaxSend(function (event, request, settings) {
-                $('#ajax_loader').show();
-            });
+        $(document).ajaxSend(function (event, request, settings) {
+            $('#ajax_loader').show();
+        });
 
-            $(document).ajaxComplete(function (event, request, settings) {
-                $('#ajax_loader').hide();
-            });
+        $(document).ajaxComplete(function (event, request, settings) {
+            $('#ajax_loader').hide();
+        });
 
 
-        </script>
+    </script>
 
-    </body>
+</body>
 </html>
