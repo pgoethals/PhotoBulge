@@ -60,7 +60,7 @@ namespace PhotoBulge.Controllers
                 }
                 
                 if (imageStream.Length > 0)
-                {                    
+                {                             
                     var response= new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = new ByteArrayContent(imageStream.ToArray()),                        

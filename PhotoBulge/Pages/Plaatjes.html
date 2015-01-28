@@ -14,6 +14,9 @@
         #images-page {
             display: none;
         }
+        #images-container {
+            margin-top: 20px;
+        }
 
         #full-image-container {
             display: none;
@@ -40,6 +43,7 @@
         </div>
         <div class="list-group" id="folder-container"></div>
     </div>
+
     <div class="container" id="images-page">
         <div class="page-header">
             <h2 id="description"></h2>
@@ -158,11 +162,15 @@
                         var div = $("#images-container").append(
                             "<div class='col-xs-6 col-md-3'><div class='input-group'>" +
                             "<input type='checkbox' class='selectImage' id='" + image.Name + "'>" +
-                            "<img src='" + src + "'" + "/>" +
+                            "<a href='#' class='thumbnail'><img src='" + src + "'" + "/></a>" +
                             "</div></div>");
                         div.click(function () {
+                            $("#full-image-container img").on("load", function() {
+                                $("#full-image-container").show();
+                                $('#ajax_loader').hide();
+                            });
                             $("#full-image-container img").attr("src", lnk);
-                            $("#full-image-container").show();
+                            $('#ajax_loader').show();
                         });
 
                     });
